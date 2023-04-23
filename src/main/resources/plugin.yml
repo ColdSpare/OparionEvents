@@ -1,0 +1,16 @@
+name: OparionEvents
+version: '${project.version}'
+main: com.coldspare.oparionevents.OparionEvents
+api-version: 1.19
+authors: [ ColdSpare ]
+description: Event Management Plugin for Oparion Events
+commands:
+  infect:
+    description: Infects the specified player with the virus
+    usage: /infect <player>
+  voteForKing:
+    description: Opens the voting GUI for the players to vote for a king
+    usage: /voteForKing
+  endVoting:
+    description: Ends voting for the players
+    usage: /endVoting
