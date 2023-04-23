@@ -94,6 +94,14 @@ public class KingVoting {
 
     public void openVotingGUI(Player player) {
         List<Player> playersInSameGroup = getPlayersInSameGroup(player);
+
+        // Sort players by the number of votes they received
+        playersInSameGroup.sort((p1, p2) -> {
+            int p1Votes = Collections.frequency(votes.values(), p1.getUniqueId());
+            int p2Votes = Collections.frequency(votes.values(), p2.getUniqueId());
+            return Integer.compare(p2Votes, p1Votes);
+        });
+
         Inventory votingGUI = Bukkit.createInventory(null, 54, "Vote for King");
 
         for (int i = 0; i < playersInSameGroup.size(); i++) {
@@ -102,8 +110,14 @@ public class KingVoting {
             SkullMeta skullMeta = (SkullMeta) playerHead.getItemMeta();
             skullMeta.setOwningPlayer(candidate);
             skullMeta.setDisplayName(ChatColor.GREEN + candidate.getName());
-            playerHead.setItemMeta(skullMeta);
 
+            // Set the lore for the player heads
+            List<String> lore = new ArrayList<>();
+            lore.add(ChatColor.GRAY + "Votes: " + ChatColor.AQUA + Collections.frequency(votes.values(), candidate.getUniqueId()));
+            lore.add(ChatColor.YELLOW + "Click to vote");
+            skullMeta.setLore(lore);
+
+            playerHead.setItemMeta(skullMeta);
             votingGUI.setItem(i * 2, playerHead);
         }
 
@@ -121,6 +135,21 @@ public class KingVoting {
         }
     }
 
+    private ItemStack createCrown() {
+        ItemStack crown = new ItemStack(Material.GOLDEN_HELMET);
+        ItemMeta meta = crown.getItemMeta();
+        meta.setDisplayName(ChatColor.GOLD + "King's Crown");
+
+        // Add custom lore to identify the King's Crown
+        List<String> crownLore = new ArrayList<>();
+        crownLore.add(ChatColor.GRAY + "The King's Royal Crown");
+        meta.setLore(crownLore);
+
+        crown.setItemMeta(meta);
+        return crown;
+    }
+
+
     public void endVotingAndDeclareKing() {
         UUID electedKingUUID = getElectedKing();
         Player electedKing = Bukkit.getPlayer(electedKingUUID);
@@ -131,14 +160,11 @@ public class KingVoting {
         }
         if (electedKing != null) {
             // Remove the previous king
-            if (currentKingUUID != null) {
-                Player previousKing = Bukkit.getPlayer(currentKingUUID);
-                if (previousKing != null) {
-                    previousKing.getInventory().setHelmet(null);
-                    previousKing.removePotionEffect(PotionEffectType.GLOWING);
-                }
-            }
+            removeCurrentKing();
+
+            // Update the current king
             currentKingUUID = electedKing.getUniqueId();
+
             // Broadcast the winner
             Bukkit.broadcastMessage(ChatColor.GOLD + electedKing.getName() + " has been elected as the king!");
 
@@ -147,24 +173,23 @@ public class KingVoting {
                 player.playSound(player.getLocation(), Sound.ENTITY_WITHER_SPAWN, 1.0f, 1.0f);
             }
 
-            // Give the golden helmet with Protection 10 and unbreakable properties
-            ItemStack goldenHelmet = new ItemStack(Material.GOLDEN_HELMET);
-            ItemMeta helmetMeta = goldenHelmet.getItemMeta();
-            helmetMeta.addEnchant(Enchantment.PROTECTION_ENVIRONMENTAL, 10, true);
-            helmetMeta.setUnbreakable(true);
-            goldenHelmet.setItemMeta(helmetMeta);
+            // Create the King's Crown with the correct lore and metadata
+            ItemStack kingsCrown = createCrown();
+            ItemMeta crownMeta = kingsCrown.getItemMeta();
+            crownMeta.addEnchant(Enchantment.PROTECTION_ENVIRONMENTAL, 10, true);
+            crownMeta.setUnbreakable(true);
+            kingsCrown.setItemMeta(crownMeta);
 
             // Replace current helmet, if any, and equip the new one
             ItemStack currentHelmet = electedKing.getInventory().getHelmet();
             if (currentHelmet != null && currentHelmet.getType() != Material.AIR) {
                 electedKing.getInventory().remove(currentHelmet);
             }
-            electedKing.getInventory().setHelmet(goldenHelmet);
+            electedKing.getInventory().setHelmet(kingsCrown);
 
             // Apply the glowing effect
             PotionEffect glowingEffect = new PotionEffect(PotionEffectType.GLOWING, Integer.MAX_VALUE, 0, false, false);
             electedKing.addPotionEffect(glowingEffect);
-
         }
     }
 }

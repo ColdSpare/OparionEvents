@@ -1,16 +1,18 @@
 package com.coldspare.oparionevents;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.SkullMeta;
 
 public class KingListener implements Listener {
     private final KingVoting kingVoting;
@@ -19,20 +21,7 @@ public class KingListener implements Listener {
         this.kingVoting = kingVoting;
     }
 
-    @EventHandler
-    public void onInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player)) return;
-
-        Player player = (Player) event.getWhoClicked();
-        if (kingVoting.isKing(player)) {
-            if (event.getSlot() == 39 || (event.getCurrentItem() != null && event.getCurrentItem().getType() == Material.GOLDEN_HELMET)) {
-                event.setCancelled(true);
-                player.sendMessage(ChatColor.RED + "You cannot remove the King's Crown!");
-            }
-        }
-    }
-
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerDeath(PlayerDeathEvent event) {
         Player player = event.getEntity();
         if (kingVoting.isKing(player)) {
@@ -44,15 +33,6 @@ public class KingListener implements Listener {
             }
             // Remove the current king
             kingVoting.removeCurrentKing();
-        }
-    }
-
-    @EventHandler
-    public void onPlayerRespawn(PlayerRespawnEvent event) {
-        Player player = event.getPlayer();
-        if (kingVoting.isKing(player)) {
-            // Re-equip the King's Crown after respawning
-            kingVoting.endVotingAndDeclareKing();
         }
     }
 }
