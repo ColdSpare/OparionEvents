@@ -16,12 +16,13 @@ import java.util.List;
 public class OparionEvents extends JavaPlugin {
     private InfectionManager infectionManager;
     private KingVoting kingVoting;
+    private HungerPhaseManager hungerPhaseManager;
 
     @Override
     public void onEnable() {
         createCureRecipe();
 
-        infectionManager = new InfectionManager();
+        infectionManager = new InfectionManager(this);
         getServer().getPluginManager().registerEvents(new InfectionListener(this, infectionManager), this);
         infectionManager.startCountdownTimer(this);
 
@@ -31,11 +32,22 @@ public class OparionEvents extends JavaPlugin {
         getCommand("endVoting").setExecutor(new EndVotingCommand(kingVoting)); // Register the endVoting command
         Bukkit.getPluginManager().registerEvents(new VoteGUIListener(kingVoting), this);
         Bukkit.getPluginManager().registerEvents(new KingListener(kingVoting), this); // Register the KingListener
+
+        // Register the prep phase command
+        getCommand("prepphase").setExecutor(new PrepPhaseCommand(infectionManager));
+        getCommand("prepphase").setTabCompleter(new PrepPhaseCommand(infectionManager));
+
+        // Register the prep phase listener
+        Bukkit.getPluginManager().registerEvents(new PrepPhaseListener(infectionManager), this);
+
+        // Register the hunger phase command and manager
+        hungerPhaseManager = new HungerPhaseManager(this);
+        getCommand("hungerphase").setExecutor(new HungerPhaseCommand(hungerPhaseManager));
+        getCommand("hungerphase").setTabCompleter(new HungerPhaseCommand(hungerPhaseManager));
     }
 
     private void createCureRecipe() {
-        ItemStack curePotion = new ItemStack(Material.POTION); // Change Material.POTION to the desired potion type
-
+        ItemStack curePotion = new ItemStack(Material.POTION);
         // Add custom name and lore using an ItemMeta
         ItemMeta curePotionMeta = curePotion.getItemMeta();
         curePotionMeta.setDisplayName(ChatColor.GREEN + "Cure Potion");

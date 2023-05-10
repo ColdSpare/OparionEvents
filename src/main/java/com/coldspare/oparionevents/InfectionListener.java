@@ -6,7 +6,6 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
@@ -42,21 +41,6 @@ public class InfectionListener implements Listener {
         ItemStack item = event.getItem();
         if (isCurePotion(item)) {
             infectionManager.handleCurePotion(event.getPlayer());
-        }
-    }
-
-    @EventHandler
-    public void onCraftItem(CraftItemEvent event) {
-        ItemStack item = event.getCurrentItem();
-        if (item != null && item.hasItemMeta()) {
-            ItemMeta meta = item.getItemMeta();
-            String key = meta.getPersistentDataContainer().get(new NamespacedKey(plugin, "cure_potion"), PersistentDataType.STRING);
-            if (key != null) {
-                Player player = (Player) event.getWhoClicked();
-                if (infectionManager.isInfected(player)) {
-                    infectionManager.curePlayer(player);
-                }
-            }
         }
     }
 

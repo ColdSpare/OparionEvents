@@ -14,3 +14,7 @@ commands:
   endVoting:
     description: Ends voting for the players
     usage: /endVoting
+  prepphase:
+    description: Enable or disable the preparation phase.
+  hungerphase:
+    description: Enables or disables the hunger phase
